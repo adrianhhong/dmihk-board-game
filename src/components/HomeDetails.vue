@@ -8,6 +8,7 @@
       outline
       single-line
       ref="message"
+      @keydown.enter="giveName"
     >
     </v-text-field>
     <v-btn class="primary" large @click="giveName">Start</v-btn>
@@ -18,15 +19,14 @@
 export default {
   data() {
     return {
-      handle: ""
+      name: ""
     };
   },
   methods: {
-    giveName() {}
-  },
-  created() {
-    // this.$socket.client is `socket.io-client` instance
-    this.$socket.client.emit("emit_method", "you little kid");
+    giveName() {
+      console.log("THe naem is: " + this.name);
+      this.$socket.client.emit("createGame", this.name);
+    }
   },
   sockets: {
     connect() {

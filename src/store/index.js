@@ -17,6 +17,8 @@ export default new Vuex.Store({
     socket_userMessage(context, message) {
       // <-- this action is triggered when `user_message` is emmited on the server
       context.commit("NEW_MESSAGE", message);
+      console.log("in actions user message");
+      console.log(message);
     }
   },
   modules: {}

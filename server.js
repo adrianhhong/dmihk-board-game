@@ -9,8 +9,8 @@ io.on("connection", socket => {
 
   socket.emit("user_message", "yep");
 
-  socket.on("emit_method", msg => {
-    console.log("emit_method" + msg);
+  socket.on("createGame", name => {
+    console.log("The name is:" + name);
   });
 });
 
