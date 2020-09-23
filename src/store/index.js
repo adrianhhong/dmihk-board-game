@@ -4,7 +4,10 @@ import Vuex from "vuex";
 Vue.use(Vuex);
 
 export default new Vuex.Store({
-  state: {},
+  state: {
+    showCreate: false,
+    showJoin: false
+  },
   mutations: {
     NEW_MESSAGE(message) {
       console.log("peep this homie: ");

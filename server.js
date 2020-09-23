@@ -37,8 +37,35 @@ io.on("connection", socket => {
       duplicateRoomID = gameData.find(room => room.roomID === roomIDTemp);
     }
     gameData.push(new Room(roomIDTemp, [name.trim()], [socket.id], []));
-    console.log(gameData);
+    console.log(`${name} created a new room: ${roomIDTemp}`);
+    socket.join(roomIDTemp);
 
-    socket.emit("gameCreated", "yep");
+    io.to(roomIDTemp).emit("updateLobby", [name]);
   });
+
+  socket.on("joinGame", (name, room) => {
+    // If room is not found, notify user.
+    let foundRoomIndex = gameData.findIndex(x => x.roomID === room);
+    if (foundRoomIndex == -1) {
+      socket.emit("roomNotFound");
+    } else {
+      // If user's name is the same as another user's name, notify user.
+      let duplicateNameIndex = gameData[foundRoomIndex].findIndex(
+        x => x.playerList === name
+      );
+      if (duplicateNameIndex !== -1) {
+        socket.emit("duplicateNameFound");
+      } else {
+        // If there is already 12 players in room, the room is full, notify user.
+        if (gameData["room"].playerList.length == 12) {
+          socket.emit("roomIsFull");
+        } else {
+          // If all checks succeed, push the user into the room and notify everyone in lobby.
+          gameData["room"].playerList.push(name);
+          io.to(roomIDTemp).emit("updateLobby", [name]);
+        }
+      }
+    }
+  });
+  // socket.emit("gameCreated", "yep");
 });
