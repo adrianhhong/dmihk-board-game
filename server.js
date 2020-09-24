@@ -40,7 +40,7 @@ io.on("connection", socket => {
     console.log(`${name} created a new room: ${roomIDTemp}`);
     socket.join(roomIDTemp);
 
-    io.to(roomIDTemp).emit("updateLobby", [name]);
+    io.to(roomIDTemp).emit("updateLobby", name, roomIDTemp);
   });
 
   socket.on("joinGame", (name, room) => {
@@ -67,5 +67,4 @@ io.on("connection", socket => {
       }
     }
   });
-  // socket.emit("gameCreated", "yep");
 });

@@ -1,27 +1,30 @@
 import Vue from "vue";
 import Vuex from "vuex";
 
+import router from "../router/index.js";
+
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
+    // Used for Home view
     showCreate: false,
-    showJoin: false
+    showJoin: false,
+    // Global name
+    name: "",
+    room: ""
   },
   mutations: {
-    NEW_MESSAGE(message) {
-      console.log("peep this homie: ");
-      console.log(message);
-      // state.messages[message.id] = message;
-      // state.messagesOrder.push(message.id);
+    updateLobby() {
+      console.log(this.state.name);
+      router.push({ name: "Lobby", params: { room: this.state.room } });
     }
   },
   actions: {
-    socket_userMessage(context, message) {
-      // <-- this action is triggered when `user_message` is emmited on the server
-      context.commit("NEW_MESSAGE", message);
-      console.log("in actions user message");
-      console.log(message);
+    socket_updateLobby(context, [name, room]) {
+      this.state.name = name;
+      this.state.room = room;
+      context.commit("updateLobby");
     }
   },
   modules: {}

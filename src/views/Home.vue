@@ -6,39 +6,48 @@
         <v-btn class="primary" large @click="gotoJoin">Join Game</v-btn>
       </v-card>
     </div>
+
     <div v-if="showCreate">
       <v-card class="pl-3 pr-3 pt-5 pb-5 mt-5">
-        <h3 class="text-xs-center mb-3">Enter a Username</h3>
+        <h3 class="text-xs-center mb-3">What's your name?</h3>
         <v-text-field
           v-model="name"
-          outline
-          single-line
-          @keydown.enter="giveName"
+          outlined
+          maxlength="20"
+          hide-details="auto"
+          :rules="nameRules"
+          @keydown.enter="createGame"
         >
         </v-text-field>
-        <v-btn class="primary" large @click="giveName">Create</v-btn>
+        <v-btn class="primary" large @click="createGame">Create</v-btn>
         <v-btn class="primary" large @click="gotoHome">Back</v-btn>
       </v-card>
     </div>
+
     <div v-if="showJoin">
       <v-card class="pl-3 pr-3 pt-5 pb-5 mt-5">
-        <h3 class="text-xs-center mb-3">Enter a Username</h3>
+        <h3 class="text-xs-center mb-3">What's your name?</h3>
         <v-text-field
           v-model="name"
-          outline
-          single-line
-          @keydown.enter="giveName"
+          outlined
+          maxlength="20"
+          hide-details="auto"
+          :rules="nameRules"
+          @keydown.enter="createGame"
         >
         </v-text-field>
         <h3 class="text-xs-center mb-3">Enter Room ID</h3>
         <v-text-field
           v-model="room"
-          outline
-          single-line
+          outlined
+          maxlength="4"
+          hide-details="auto"
+          :rules="roomRules"
           @keydown.enter="giveRoom"
+          v-uppercase="room"
         >
         </v-text-field>
-        <v-btn class="primary" large @click="giveName">Join</v-btn>
+        <v-btn class="primary" large @click="joinGame">Join</v-btn>
         <v-btn class="primary" large @click="gotoHome">Back</v-btn>
       </v-card>
     </div>
@@ -56,7 +65,12 @@ export default {
       showCreate: false,
       showJoin: false,
       name: "",
-      room: ""
+      room: "",
+      nameRules: [value => !!value || "Please enter a name."],
+      roomRules: [
+        value => !!value || "Please enter a Room ID."
+        // value => (value && value.length >= 3) || "A Room ID is 4 characters"
+      ]
     };
   },
   methods: {
@@ -71,10 +85,25 @@ export default {
       this.showJoin = false;
     },
     createGame() {
-      this.$socket.client.emit("createGame", this.name);
+      if (this.name.trim()) {
+        this.$socket.client.emit("createGame", this.name);
+      } else {
+        console.log("non-empty name");
+      }
     },
     joinGame() {
       this.$socket.client.emit("joinGame", (this.name, this.room));
+    }
+  },
+  // These two below are used to capitlise the Room ID field.
+  filters: {
+    uppercase(value) {
+      return value.toUpperCase();
+    }
+  },
+  watch: {
+    room(val) {
+      this.room = this.$options.filters.uppercase(val);
     }
   }
 };
