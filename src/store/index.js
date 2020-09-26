@@ -7,25 +7,21 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    // Used for Home view
-    showCreate: false,
-    showJoin: false,
-    // Global name
-    name: "",
-    room: ""
+    // Global variables
+    globalName: "",
+    globalRoom: "",
+    globalPlayerList: []
   },
   mutations: {
-    updateLobby() {
-      console.log(this.state.name);
-      router.push({ name: "Lobby", params: { room: this.state.room } });
+    SOCKET_UPDATELOBBY(state, [playerList, room]) {
+      this.state.globalPlayerList = playerList;
+      this.state.globalRoom = room;
+      router.push({ name: "Lobby", params: { room: this.state.globalRoom } });
+    },
+    setGlobalName(state, payload) {
+      state.globalName = payload.name;
     }
   },
-  actions: {
-    socket_updateLobby(context, [name, room]) {
-      this.state.name = name;
-      this.state.room = room;
-      context.commit("updateLobby");
-    }
-  },
+  actions: {},
   modules: {}
 });

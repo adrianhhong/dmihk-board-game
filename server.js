@@ -37,11 +37,10 @@ io.on("connection", socket => {
       duplicateRoomID = gameData.find(room => room.roomID === roomIDTemp);
     }
     gameData.push(new Room(roomIDTemp, [name.trim()], [socket.id], []));
-    console.log(`${name} created a new room: ${roomIDTemp}`);
+    console.log(`${name.trim()} created a new room: ${roomIDTemp}`);
     console.log(gameData);
     socket.join(roomIDTemp);
-
-    io.to(roomIDTemp).emit("updateLobby", name, roomIDTemp);
+    io.to(roomIDTemp).emit("updateLobby", [name.trim()], roomIDTemp);
   });
 
   socket.on("joinGame", (name, room) => {
@@ -69,6 +68,7 @@ io.on("connection", socket => {
           gameData[foundRoomIndex]["socketList"].push(socket.id);
           console.log(`${name} has joined ${room}`);
           console.log(gameData);
+          socket.join(room);
           io.to(room).emit(
             "updateLobby",
             gameData[foundRoomIndex]["playerList"],
