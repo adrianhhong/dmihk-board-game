@@ -1,17 +1,17 @@
 <template>
   <div>
     <!-- HOME PAGE -->
-    <div v-if="!showCreate && !showJoin">
-      <v-card>
-        <v-btn class="primary" large @click="showCreate = true"
-          >Create Game</v-btn
-        >
-        <v-btn class="primary" large @click="showJoin = true">Join Game</v-btn>
-      </v-card>
+    <div v-if="!showCreate && !showJoin" class="text-center">
+      <v-card><h1>deception: murder in hong kong</h1> </v-card>
+
+      <v-btn class="primary" large @click="showCreate = true"
+        >Create Game</v-btn
+      >
+      <v-btn class="primary" large @click="showJoin = true">Join Game</v-btn>
     </div>
 
     <!-- CREATE PAGE -->
-    <div v-if="showCreate">
+    <div v-if="showCreate" class="text-center">
       <v-card class="pl-3 pr-3 pt-5 pb-5 mt-5">
         <h3 class="text-xs-center mb-3">What's your name?</h3>
         <v-text-field
@@ -31,7 +31,7 @@
     </div>
 
     <!-- JOIN PAGE -->
-    <div v-if="showJoin">
+    <div v-if="showJoin" class="text-center">
       <v-card class="pl-3 pr-3 pt-5 pb-5 mt-5">
         <h3 class="text-xs-center mb-3">What's your name?</h3>
         <v-text-field
@@ -40,10 +40,28 @@
           maxlength="20"
           hide-details="auto"
           :rules="nameRules"
-          @keydown.enter="createGame"
+          @keydown.enter="joinGame"
         >
         </v-text-field>
 
+        <h3 class="text-xs-center mb-3">Enter Room ID</h3>
+        <v-text-field
+          v-model="room"
+          outlined
+          maxlength="4"
+          hide-details="auto"
+          :rules="roomRules"
+          @keydown.enter="joinGame"
+          v-uppercase="room"
+        >
+        </v-text-field>
+
+        <v-btn class="primary" large @click="joinGame">Join</v-btn>
+        <v-btn class="primary" large @click="showCreate = showJoin = false"
+          >Back</v-btn
+        >
+
+        <!-- Snackbar Warnings -->
         <v-snackbar v-model="showDuplicateNameFound" :timeout="3000">
           Duplicate name found. Please choose a different name.
           <template v-slot:action="{ attrs }">
@@ -57,18 +75,6 @@
             </v-btn>
           </template>
         </v-snackbar>
-
-        <h3 class="text-xs-center mb-3">Enter Room ID</h3>
-        <v-text-field
-          v-model="room"
-          outlined
-          maxlength="4"
-          hide-details="auto"
-          :rules="roomRules"
-          @keydown.enter="giveRoom"
-          v-uppercase="room"
-        >
-        </v-text-field>
 
         <v-snackbar v-model="showRoomNotFound" :timeout="3000">
           Room not found!
@@ -85,7 +91,7 @@
         </v-snackbar>
 
         <v-snackbar v-model="showRoomIsFull" :timeout="3000">
-          Room not full!
+          Room is full!
           <template v-slot:action="{ attrs }">
             <v-btn
               color="red"
@@ -97,11 +103,6 @@
             </v-btn>
           </template>
         </v-snackbar>
-
-        <v-btn class="primary" large @click="joinGame">Join</v-btn>
-        <v-btn class="primary" large @click="showCreate = showJoin = false"
-          >Back</v-btn
-        >
       </v-card>
     </div>
   </div>

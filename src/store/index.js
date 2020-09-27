@@ -10,13 +10,25 @@ export default new Vuex.Store({
     // Global variables
     globalName: "",
     globalRoom: "",
-    globalPlayerList: []
+    globalPlayerList: [],
+    joinedRoomByURL: true
+  },
+  getters: {
+    getIndexOfPlayer(state) {
+      return state.globalPlayerList.findIndex(x => x == state.globalName);
+    }
   },
   mutations: {
     SOCKET_UPDATELOBBY(state, [playerList, room]) {
       this.state.globalPlayerList = playerList;
       this.state.globalRoom = room;
+      this.state.joinedRoomByURL = false;
       router.push({ name: "Lobby", params: { room: this.state.globalRoom } });
+    },
+    SOCKET_DOESROOMEXIST(state, exists) {
+      if (!exists) {
+        router.push({ name: "Home" });
+      }
     },
     setGlobalName(state, payload) {
       state.globalName = payload.name;

@@ -78,4 +78,13 @@ io.on("connection", socket => {
       }
     }
   });
+
+  socket.on("checkIfRoomExistsWhenJoinByUrl", room => {
+    let foundRoomIndex = gameData.findIndex(x => x.roomID == room);
+    if (foundRoomIndex == -1) {
+      socket.emit("doesRoomExist", 0);
+    } else {
+      socket.emit("doesRoomExist", 1);
+    }
+  });
 });
