@@ -87,4 +87,62 @@ io.on("connection", socket => {
       socket.emit("doesRoomExist", 1);
     }
   });
+
+  socket.on("leaveGame", room => {
+    let roomIndex = gameData.findIndex(x => x.roomID == room);
+    let deleteIndex = gameData[roomIndex]["socketList"].findIndex(
+      x => x == socket.id
+    );
+    gameData[roomIndex]["playerList"].splice(deleteIndex, 1);
+    gameData[roomIndex]["socketList"].splice(deleteIndex, 1);
+    socket.leave(room);
+    if (
+      Array.isArray(gameData[roomIndex]["playerList"]) && // Array exists and is not empty
+      gameData[roomIndex]["playerList"].length
+    ) {
+      io.to(room).emit("updateLobby", gameData[roomIndex]["playerList"], room);
+    } else {
+      // No one left in the room, so delete it
+      gameData.splice(roomIndex, 1);
+    }
+    console.log(gameData);
+  });
+
+  socket.on("disconnect", reason => {
+    console.log(`${socket.id} disconnected because of ${reason}`);
+    let roomIndex = null;
+    let deleteIndex = null;
+    let roomID = "";
+    let socketPartOfRoomAlready = false; // Needs to be checked since sometimes a client disconnects without even joining to a room yet.
+    for (const [index, room] of gameData.entries()) {
+      let deleteSocketIndex = room["socketList"].findIndex(x => x == socket.id);
+      if (deleteSocketIndex != -1) {
+        roomIndex = index;
+        deleteIndex = deleteSocketIndex;
+        roomID = room.roomID;
+        socketPartOfRoomAlready = true;
+        break;
+      }
+    }
+
+    if (socketPartOfRoomAlready == true) {
+      gameData[roomIndex]["playerList"].splice(deleteIndex, 1);
+      gameData[roomIndex]["socketList"].splice(deleteIndex, 1);
+      socket.leave(roomID);
+      if (
+        Array.isArray(gameData[roomIndex]["playerList"]) && // Array exists and is not empty
+        gameData[roomIndex]["playerList"].length
+      ) {
+        io.to(roomID).emit(
+          "updateLobby",
+          gameData[roomIndex]["playerList"],
+          roomID
+        );
+      } else {
+        // No one left in the room, so delete it
+        gameData.splice(roomIndex, 1);
+      }
+      console.log(gameData);
+    }
+  });
 });

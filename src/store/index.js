@@ -32,6 +32,11 @@ export default new Vuex.Store({
     },
     setGlobalName(state, payload) {
       state.globalName = payload.name;
+    },
+    resetAllGlobalVariables(state) {
+      state.globalName = "";
+      state.globalRoom = "";
+      state.globalPlayerList = [];
     }
   },
   actions: {},

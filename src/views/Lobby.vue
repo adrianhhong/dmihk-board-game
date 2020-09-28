@@ -57,18 +57,15 @@
         x-large
         color="secondary"
         v-clipboard:copy="globalRoom"
-        :loading="loading"
-        :disabled="loading"
-        @click="loader = 'loading'"
+        :loading="copied"
+        :disabled="copied"
+        @click="watchCopy = 'copied'"
       >
         {{ globalRoom }}
-        <!-- <v-icon size: small>
-          mdi-content-copy
-        </v-icon> -->
-
-        <template v-slot:loader>
+        <template v-slot:watchCopy>
           <span>Copied!</span>
         </template>
+        <!-- CHECK WHY THIS DOESNT SHOW Copied! anymore???? -->
       </v-btn>
 
       <v-card class="mx-auto" max-width="300" tile>
@@ -82,6 +79,10 @@
             </v-list-item>
           </v-list-item-group>
         </v-list>
+      </v-card>
+
+      <v-card class="mx-auto" max-width="600">
+        <v-select :items="items" label="Standard"></v-select>
       </v-card>
 
       <v-btn class="primary" large @click="startGame">Start</v-btn>
@@ -102,8 +103,8 @@ export default {
       nameRules: [value => !!value || "Please enter a name."],
       showDuplicateNameFound: false,
       showRoomIsFull: false,
-      loader: null,
-      loading: false
+      watchCopy: null,
+      copied: false
     };
   },
   computed: {
@@ -118,9 +119,11 @@ export default {
     }
   },
   methods: {
+    // Go back to Home view
     goToHome() {
       this.$router.push({ name: "Home" });
     },
+    // Clicking Join Game
     joinGame() {
       if (this.name.trim()) {
         store.commit("setGlobalName", { name: this.name.trim() });
@@ -131,17 +134,21 @@ export default {
         );
       }
     },
+    // Clicking Quit Game
     quitGame() {
-      // Cleanup
+      // Cleanup remove global variables. Send socket to remove player
+      this.$socket.client.emit("leaveGame", this.globalRoom);
+      store.commit("resetAllGlobalVariables");
       this.$router.push({ name: "Home" });
     }
   },
   watch: {
-    loader() {
-      const l = this.loader;
+    // Used to display Copied after clicking the room id
+    watchCopy() {
+      const l = this.watchCopy;
       this[l] = !this[l];
       setTimeout(() => (this[l] = false), 3000);
-      this.loader = null;
+      this.watchCopy = null;
     }
   },
   sockets: {
@@ -154,7 +161,7 @@ export default {
   },
 
   beforeCreate() {
-    // Need to check if the room actually exists!
+    // If you try to join a room using the URL, we need to first check if that room actually exists first.
     this.$socket.client.emit(
       "checkIfRoomExistsWhenJoinByUrl",
       this.$route.params.room
