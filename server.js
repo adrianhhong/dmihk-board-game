@@ -28,7 +28,10 @@ function makeRoomID(length) {
 }
 
 io.on("connection", socket => {
-  // When a user creates a room.
+  /** 
+   * createGame
+   * When a user creates a room
+   */
   socket.on("createGame", name => {
     let roomIDTemp = makeRoomID(4);
     let duplicateRoomID = gameData.find(room => room.roomID === roomIDTemp);
@@ -43,6 +46,10 @@ io.on("connection", socket => {
     io.to(roomIDTemp).emit("updateLobby", [name.trim()], roomIDTemp);
   });
 
+  /** 
+   * joinGame
+   * When a user tries to join a room
+   */
   socket.on("joinGame", (name, room) => {
     // If room is not found, notify user.
     let foundRoomIndex = gameData.findIndex(x => x.roomID == room);
@@ -79,6 +86,10 @@ io.on("connection", socket => {
     }
   });
 
+  /** 
+   * checkIfRoomExistsWhenJoinByUrl
+   * When a user tries to join a game by using the full URL (i.e. by typing the room in the URL)
+   */
   socket.on("checkIfRoomExistsWhenJoinByUrl", room => {
     let foundRoomIndex = gameData.findIndex(x => x.roomID == room);
     if (foundRoomIndex == -1) {
@@ -88,6 +99,18 @@ io.on("connection", socket => {
     }
   });
 
+  /** 
+   * startGame
+   * When a user tries to join a room
+   */
+  socket.on("startGame", (room) => {
+
+
+  });
+  /** 
+   * leaveGame
+   * When a user presses the Quit button to leave a room
+   */
   socket.on("leaveGame", room => {
     let roomIndex = gameData.findIndex(x => x.roomID == room);
     let deleteIndex = gameData[roomIndex]["socketList"].findIndex(
@@ -108,6 +131,10 @@ io.on("connection", socket => {
     console.log(gameData);
   });
 
+  /** 
+   * disconnect
+   * When a user disconnects by some way or another (e.g. exiting the browser)
+   */
   socket.on("disconnect", reason => {
     console.log(`${socket.id} disconnected because of ${reason}`);
     let roomIndex = null;
@@ -124,7 +151,6 @@ io.on("connection", socket => {
         break;
       }
     }
-
     if (socketPartOfRoomAlready == true) {
       gameData[roomIndex]["playerList"].splice(deleteIndex, 1);
       gameData[roomIndex]["socketList"].splice(deleteIndex, 1);

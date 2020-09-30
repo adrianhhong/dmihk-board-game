@@ -65,7 +65,6 @@
         <template v-slot:loader>
           <span>Copied!</span>
         </template>
-        <!-- CHECK WHY THIS DOESNT SHOW Copied! anymore???? -->
       </v-btn>
 
       <v-card class="mx-auto" max-width="300" tile>
@@ -93,8 +92,59 @@
           label="Pick Forensic Scientist"
           :disabled="randomiseForensicScientist"
         ></v-select>
-        <v-checkbox label="Add Accomplice"></v-checkbox>
-        <v-checkbox label="Add Witness"></v-checkbox>
+        <h4>Additional Roles (optional for > 6 players)</h4>
+        <v-checkbox
+          v-model="addAccomplice"
+          label="Add Accomplice"
+          :disabled="globalPlayerList.length < 6"
+        ></v-checkbox>
+        <v-checkbox
+          v-model="addWitness"
+          label="Add Witness"
+          :disabled="globalPlayerList.length < 6"
+        ></v-checkbox>
+
+        <h4>Number of Cards Per Player</h4>
+        <v-subheader>Means Cards</v-subheader>
+        <v-card-text>
+          <v-slider
+            v-model="numberOfCards"
+            :tick-labels="meansLabels"
+            :max="6"
+            step="1"
+            ticks="always"
+            tick-size="3"
+            persistent-hint
+            :hint="
+              numberOfCards < 3
+                ? 'Easier for Investigators'
+                : numberOfCards > 3
+                ? 'Harder for Investigators'
+                : 'Default'
+            "
+          >
+          </v-slider>
+        </v-card-text>
+        <v-subheader>Clue Cards</v-subheader>
+        <v-card-text>
+          <v-slider
+            v-model="numberOfCards"
+            :tick-labels="meansLabels"
+            :max="6"
+            step="1"
+            ticks="always"
+            tick-size="3"
+            persistent-hint
+            :hint="
+              numberOfCards < 3
+                ? 'Easier for Investigators'
+                : numberOfCards > 3
+                ? 'Harder for Investigators'
+                : 'Default'
+            "
+          >
+          </v-slider>
+        </v-card-text>
       </v-card>
 
       <v-btn class="primary" large @click="startGame">Start</v-btn>
@@ -117,7 +167,11 @@ export default {
       showRoomIsFull: false,
       loader: null,
       copied: false,
-      randomiseForensicScientist: true
+      randomiseForensicScientist: false,
+      addAccomplice: false,
+      addWitness: false,
+      numberOfCards: 3,
+      meansLabels: ["1", "2", "3", "4", "5", "6", "7"]
     };
   },
   computed: {
@@ -146,6 +200,10 @@ export default {
           this.$route.params.room
         );
       }
+    },
+    // Clicking Start Game
+    startGame() {
+      this.$socket.client.emit("startGame", this.globalRoom);
     },
     // Clicking Quit Game
     quitGame() {
