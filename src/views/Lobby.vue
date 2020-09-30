@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="joinedRoomByURL" class="text-center">
+    <div v-if="joinedRoomByURL" class="text-center" max-width="300">
       <h1>Joining {{ this.$route.params.room }}</h1>
       <v-card class="pl-3 pr-3 pt-5 pb-5 mt-5">
         <h3 class="text-xs-center mb-3">What's your name?</h3>
@@ -91,6 +91,7 @@
           :items="globalPlayerList"
           label="Pick Forensic Scientist"
           :disabled="randomiseForensicScientist"
+          v-model="currentForensicScientist"
         ></v-select>
         <h4>Additional Roles (optional for > 6 players)</h4>
         <v-checkbox
@@ -168,6 +169,7 @@ export default {
       loader: null,
       copied: false,
       randomiseForensicScientist: false,
+      currentForensicScientist: "",
       addAccomplice: false,
       addWitness: false,
       numberOfCards: 3,
