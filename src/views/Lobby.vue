@@ -59,10 +59,10 @@
         v-clipboard:copy="globalRoom"
         :loading="copied"
         :disabled="copied"
-        @click="watchCopy = 'copied'"
+        @click="loader = 'copied'"
       >
         {{ globalRoom }}
-        <template v-slot:watchCopy>
+        <template v-slot:loader>
           <span>Copied!</span>
         </template>
         <!-- CHECK WHY THIS DOESNT SHOW Copied! anymore???? -->
@@ -81,8 +81,20 @@
         </v-list>
       </v-card>
 
-      <v-card class="mx-auto" max-width="600">
-        <v-select :items="items" label="Standard"></v-select>
+      <v-card class="mx-auto" max-width="300">
+        <v-checkbox
+          v-model="randomiseForensicScientist"
+          label="Randomise Forensic Scientist?"
+        ></v-checkbox>
+        <v-select
+          v-show="!randomiseForensicScientist"
+          outlined
+          :items="globalPlayerList"
+          label="Pick Forensic Scientist"
+          :disabled="randomiseForensicScientist"
+        ></v-select>
+        <v-checkbox label="Add Accomplice"></v-checkbox>
+        <v-checkbox label="Add Witness"></v-checkbox>
       </v-card>
 
       <v-btn class="primary" large @click="startGame">Start</v-btn>
@@ -103,8 +115,9 @@ export default {
       nameRules: [value => !!value || "Please enter a name."],
       showDuplicateNameFound: false,
       showRoomIsFull: false,
-      watchCopy: null,
-      copied: false
+      loader: null,
+      copied: false,
+      randomiseForensicScientist: true
     };
   },
   computed: {
@@ -144,11 +157,11 @@ export default {
   },
   watch: {
     // Used to display Copied after clicking the room id
-    watchCopy() {
-      const l = this.watchCopy;
+    loader() {
+      const l = this.loader;
       this[l] = !this[l];
       setTimeout(() => (this[l] = false), 3000);
-      this.watchCopy = null;
+      this.loader = null;
     }
   },
   sockets: {
