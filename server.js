@@ -3,7 +3,7 @@ const http = require("http").createServer(app);
 const io = require("socket.io")(http);
 
 http.listen(3000, () => {
-  console.log("listening on *:3000");
+  console.log("Starting server on port 3000");
 });
 
 // Holds all rooms and data in each room,
@@ -15,6 +15,13 @@ class Room {
     this.playerList = playerList;
     this.socketList = socketList;
     this.roleList = roleList;
+    this.lobbyStates = {
+      randomiseForensicScientist: false,
+      currentForensicScientist: "",
+      addAccomplice: false,
+      addWitness: false,
+      numberOfCards: 3 // This refers to the index
+    };
   }
 }
 
@@ -28,7 +35,7 @@ function makeRoomID(length) {
 }
 
 io.on("connection", socket => {
-  /** 
+  /**
    * createGame
    * When a user creates a room
    */
@@ -46,7 +53,7 @@ io.on("connection", socket => {
     io.to(roomIDTemp).emit("updateLobby", [name.trim()], roomIDTemp);
   });
 
-  /** 
+  /**
    * joinGame
    * When a user tries to join a room
    */
@@ -86,7 +93,7 @@ io.on("connection", socket => {
     }
   });
 
-  /** 
+  /**
    * checkIfRoomExistsWhenJoinByUrl
    * When a user tries to join a game by using the full URL (i.e. by typing the room in the URL)
    */
@@ -99,15 +106,12 @@ io.on("connection", socket => {
     }
   });
 
-  /** 
+  /**
    * startGame
    * When a user tries to join a room
    */
-  socket.on("startGame", (room) => {
-
-
-  });
-  /** 
+  socket.on("startGame", room => {});
+  /**
    * leaveGame
    * When a user presses the Quit button to leave a room
    */
@@ -131,7 +135,7 @@ io.on("connection", socket => {
     console.log(gameData);
   });
 
-  /** 
+  /**
    * disconnect
    * When a user disconnects by some way or another (e.g. exiting the browser)
    */
@@ -172,8 +176,14 @@ io.on("connection", socket => {
     }
   });
 
-  socket.on("changeLobbyState", (room, element) => {
-    console.log("peepthis")
-    socket.to(room).emit('changedLobbyState', element);
-  })
+  socket.on("getLobbyState", room => {
+    let roomIndex = gameData.findIndex(x => x.roomID == room);
+    socket.emit("newLobbyState", gameData[roomIndex].lobbyStates);
+  });
+
+  socket.on("setLobbyState", data => {
+    let roomIndex = gameData.findIndex(x => x.roomID == data.room);
+    gameData[roomIndex].lobbyStates[data.type] = data.state;
+    socket.to(data.room).emit("newLobbyState", gameData[roomIndex].lobbyStates);
+  });
 });

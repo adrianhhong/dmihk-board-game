@@ -90,31 +90,33 @@
         <v-checkbox
           v-model="randomiseForensicScientist"
           label="Randomise Forensic Scientist?"
+          :disabled="indexOfPlayer != 0"
         ></v-checkbox>
         <v-select
           v-show="!randomiseForensicScientist"
           outlined
           :items="globalPlayerList"
           label="Pick Forensic Scientist"
-          :disabled="randomiseForensicScientist"
+          :disabled="indexOfPlayer != 0"
           v-model="currentForensicScientist"
         ></v-select>
         <h4>Additional Roles (optional for > 6 players)</h4>
         <v-checkbox
           v-model="addAccomplice"
           label="Add Accomplice"
-          :disabled="globalPlayerList.length < 6"
+          :disabled="globalPlayerList.length < 6 || indexOfPlayer != 0"
         ></v-checkbox>
         <v-checkbox
           v-model="addWitness"
           label="Add Witness"
-          :disabled="globalPlayerList.length < 6"
+          :disabled="globalPlayerList.length < 6 || indexOfPlayer != 0"
         ></v-checkbox>
 
         <h4>Number of Cards Per Player</h4>
         <v-subheader>Means Cards</v-subheader>
         <v-card-text>
           <v-slider
+            :disabled="indexOfPlayer != 0"
             v-model="numberOfCards"
             :tick-labels="cardLabels"
             :max="6"
@@ -135,6 +137,7 @@
         <v-subheader>Clue Cards</v-subheader>
         <v-card-text>
           <v-slider
+            :disabled="indexOfPlayer != 0"
             v-model="numberOfCards"
             :tick-labels="cardLabels"
             :max="6"
@@ -184,6 +187,7 @@ export default {
     };
   },
   computed: {
+    // Get all global states from the vuex store
     ...mapState([
       "globalName",
       "globalRoom",
@@ -223,6 +227,12 @@ export default {
     }
   },
   watch: {
+    // When we join the lobby, we want to get the current lobby states
+    joinedRoomByURL(newVal) {
+      if (newVal == false) {
+        this.$socket.client.emit("getLobbyState", this.globalRoom);
+      }
+    },
     // Used to display Copied after clicking the room id
     loader() {
       const l = this.loader;
@@ -230,33 +240,74 @@ export default {
       setTimeout(() => (this[l] = false), 3000);
       this.loader = null;
     },
+    // When each lobby state changes, change it for all clients in room
     randomiseForensicScientist() {
-      console.log("randomisseeeeeeeeeee");
-      this.$socket.client.emit(
-        "changeLobbyState",
-        this.globalRoom,
-        "randomiseForensicScientist"
-      );
+      if (this.indexOfPlayer == 0) {
+        this.$socket.client.emit("setLobbyState", {
+          room: this.globalRoom,
+          type: "randomiseForensicScientist",
+          state: this.randomiseForensicScientist
+        });
+      }
+    },
+    currentForensicScientist() {
+      if (this.indexOfPlayer == 0) {
+        this.$socket.client.emit("setLobbyState", {
+          room: this.globalRoom,
+          type: "currentForensicScientist",
+          state: this.currentForensicScientist
+        });
+      }
+    },
+    addAccomplice() {
+      if (this.indexOfPlayer == 0) {
+        this.$socket.client.emit("setLobbyState", {
+          room: this.globalRoom,
+          type: "addAccomplice",
+          state: this.addAccomplice
+        });
+      }
+    },
+    addWitness() {
+      if (this.indexOfPlayer == 0) {
+        this.$socket.client.emit("setLobbyState", {
+          room: this.globalRoom,
+          type: "addWitness",
+          state: this.addWitness
+        });
+      }
+    },
+    numberOfCards() {
+      if (this.indexOfPlayer == 0) {
+        this.$socket.client.emit("setLobbyState", {
+          room: this.globalRoom,
+          type: "numberOfCards",
+          state: this.numberOfCards
+        });
+      }
     }
   },
   sockets: {
+    // Snackbar warnings
     duplicateNameFound() {
       this.showDuplicateNameFound = true;
     },
+    // Snackbar warnings
     roomIsFull() {
       this.showRoomIsFull = true;
     },
-    changedLobbyState(element) {
-      if (element == "randomiseForensicScientist") {
-        console.log(this.randomiseForensicScientist);
-        this.randomiseForensicScientist = !this.randomiseForensicScientist;
-        console.log(this.randomiseForensicScientist);
-      }
+    // Update the lobby states
+    newLobbyState(data) {
+      this.randomiseForensicScientist = data.randomiseForensicScientist;
+      this.currentForensicScientist = data.currentForensicScientist;
+      this.addAccomplice = data.addAccomplice;
+      this.addWitness = data.addWitness;
+      this.numberOfCards = data.numberOfCards;
     }
   },
 
   beforeCreate() {
-    // If you try to join a room using the URL, we need to first check if that room actually exists first.
+    // If you try to join a room using the URL, we need to first check if that room actually exists
     this.$socket.client.emit(
       "checkIfRoomExistsWhenJoinByUrl",
       this.$route.params.room
