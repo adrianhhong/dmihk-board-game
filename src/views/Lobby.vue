@@ -1,13 +1,13 @@
 <template>
   <div>
-    <div v-if="joinedRoomByURL" class="text-center" max-width="300">
+    <div v-if="joinedRoomByURL" class="text-center" max-width="425">
       <h1>Joining {{ this.$route.params.room }}</h1>
       <v-card class="pl-3 pr-3 pt-5 pb-5 mt-5">
         <h3 class="text-xs-center mb-3">What's your name?</h3>
         <v-text-field
           v-model="name"
           outlined
-          maxlength="20"
+          maxlength="15"
           hide-details="auto"
           :rules="nameRules"
           @keydown.enter="joinGame"
@@ -72,9 +72,15 @@
           <v-subheader>Players</v-subheader>
           <v-list-item-group v-model="indexOfPlayer" color="primary">
             <v-list-item v-for="(player, i) in globalPlayerList" :key="i">
-              <v-list-item-content>
-                <v-list-item-title v-text="player"></v-list-item-title>
-              </v-list-item-content>
+              <v-list-item-title
+                v-text="player"
+                style="text-align:left"
+              ></v-list-item-title>
+              <v-list-item-icon>
+                <v-icon v-if="i == 0" color="blue" right>
+                  mdi-crown
+                </v-icon>
+              </v-list-item-icon>
             </v-list-item>
           </v-list-item-group>
         </v-list>
@@ -110,7 +116,7 @@
         <v-card-text>
           <v-slider
             v-model="numberOfCards"
-            :tick-labels="meansLabels"
+            :tick-labels="cardLabels"
             :max="6"
             step="1"
             ticks="always"
@@ -130,7 +136,7 @@
         <v-card-text>
           <v-slider
             v-model="numberOfCards"
-            :tick-labels="meansLabels"
+            :tick-labels="cardLabels"
             :max="6"
             step="1"
             ticks="always"
@@ -168,12 +174,13 @@ export default {
       showRoomIsFull: false,
       loader: null,
       copied: false,
+
       randomiseForensicScientist: false,
       currentForensicScientist: "",
       addAccomplice: false,
       addWitness: false,
-      numberOfCards: 3,
-      meansLabels: ["1", "2", "3", "4", "5", "6", "7"]
+      numberOfCards: 3, // This refers to the index
+      cardLabels: ["1", "2", "3", "4", "5", "6", "7"]
     };
   },
   computed: {
@@ -222,6 +229,14 @@ export default {
       this[l] = !this[l];
       setTimeout(() => (this[l] = false), 3000);
       this.loader = null;
+    },
+    randomiseForensicScientist() {
+      console.log("randomisseeeeeeeeeee");
+      this.$socket.client.emit(
+        "changeLobbyState",
+        this.globalRoom,
+        "randomiseForensicScientist"
+      );
     }
   },
   sockets: {
@@ -230,6 +245,13 @@ export default {
     },
     roomIsFull() {
       this.showRoomIsFull = true;
+    },
+    changedLobbyState(element) {
+      if (element == "randomiseForensicScientist") {
+        console.log(this.randomiseForensicScientist);
+        this.randomiseForensicScientist = !this.randomiseForensicScientist;
+        console.log(this.randomiseForensicScientist);
+      }
     }
   },
 

@@ -171,4 +171,9 @@ io.on("connection", socket => {
       console.log(gameData);
     }
   });
+
+  socket.on("changeLobbyState", (room, element) => {
+    console.log("peepthis")
+    socket.to(room).emit('changedLobbyState', element);
+  })
 });
