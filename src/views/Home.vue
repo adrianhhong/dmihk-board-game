@@ -159,6 +159,7 @@ export default {
       return value.toUpperCase();
     }
   },
+
   watch: {
     // Used to capitlise the Room ID field.
     room(val) {

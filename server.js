@@ -15,9 +15,11 @@ class Room {
     this.playerList = playerList;
     this.socketList = socketList;
     this.roleList = roleList;
+    this.means = [];
+    this.clues = [];
     this.lobbyStates = {
       randomiseForensicScientist: false,
-      currentForensicScientist: "",
+      currentForensicScientist: playerList[0],
       addAccomplice: false,
       addWitness: false,
       numberOfCards: 3 // This refers to the index
@@ -46,11 +48,11 @@ io.on("connection", socket => {
       roomIDTemp = makeRoomID(4);
       duplicateRoomID = gameData.find(room => room.roomID === roomIDTemp);
     }
-    gameData.push(new Room(roomIDTemp, [name.trim()], [socket.id], []));
+    gameData.push(new Room(roomIDTemp, [name.trim()], [socket.id], [""]));
     console.log(`${name.trim()} created a new room: ${roomIDTemp}`);
     console.log(gameData);
     socket.join(roomIDTemp);
-    io.to(roomIDTemp).emit("updateLobby", [name.trim()], roomIDTemp);
+    io.in(roomIDTemp).emit("updateLobby", [name.trim()], roomIDTemp);
   });
 
   /**
@@ -80,6 +82,7 @@ io.on("connection", socket => {
           // If all checks succeed, push the user into the room and notify everyone in lobby.
           gameData[foundRoomIndex]["playerList"].push(name);
           gameData[foundRoomIndex]["socketList"].push(socket.id);
+          gameData[foundRoomIndex]["roleList"].push("");
           console.log(`${name} has joined ${room}`);
           console.log(gameData);
           socket.join(room);
@@ -110,7 +113,16 @@ io.on("connection", socket => {
    * startGame
    * When a user tries to join a room
    */
-  socket.on("startGame", room => {});
+  socket.on("startGame", room => {
+    // Set all roles
+    let roomIndex = gameData.findIndex(x => x.roomID == room);
+    if (gameData[roomIndex].lobbyStates.randomiseForensicScientist == false) {
+      let FS = gameData[roomIndex].lobbyStates.currentForensicScientist;
+      let FSIndex = gameData[roomIndex].playerList.findIndex(x => x == FS);
+      gameData[roomIndex].roleList.splice(FSIndex, 1, "FS");
+    }
+    console.log(gameData);
+  });
   /**
    * leaveGame
    * When a user presses the Quit button to leave a room
