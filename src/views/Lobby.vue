@@ -50,7 +50,13 @@
 
     <!-- Actual Lobby -->
     <div v-if="!joinedRoomByURL" class="text-center">
-      <h1>waiting for players...</h1>
+      <h1>deception: murder in hong kong</h1>
+      <h2 v-if="globalPlayerList.length < 4">
+        game requires a minimum of 4 players
+      </h2>
+      <h2 v-if="globalPlayerList.length >= 4">
+        game has a maximum capacity of 12 players
+      </h2>
       <h3>room code:</h3>
       <v-btn
         rounded
@@ -157,7 +163,13 @@
         </v-card-text>
       </v-card>
 
-      <v-btn class="primary" large @click="startGame">Start</v-btn>
+      <v-btn
+        class="primary"
+        large
+        :disabled="globalPlayerList.length < 4"
+        @click="startGame"
+        >Start</v-btn
+      >
       <v-btn class="primary" large @click="quitGame">Quit</v-btn>
     </div>
   </div>
