@@ -166,7 +166,7 @@
       <v-btn
         class="primary"
         large
-        :disabled="globalPlayerList.length < 4"
+        :disabled="globalPlayerList.length < 4 || indexOfPlayer != 0"
         @click="startGame"
         >Start</v-btn
       >
@@ -239,7 +239,7 @@ export default {
     }
   },
   watch: {
-    // When we join the lobby, we want to get the current lobby states
+    // When we join the lobby from URL, we want to get the current lobby states
     joinedRoomByURL(newVal) {
       if (newVal == false) {
         this.$socket.client.emit("getLobbyState", this.globalRoom);
@@ -324,6 +324,15 @@ export default {
       "checkIfRoomExistsWhenJoinByUrl",
       this.$route.params.room
     );
+  },
+
+  mounted() {
+    // When you create a game, or join a game from the home page it calls mounted since we are creating this lobby view for the first time.
+    // When we come from the home view, we need to update the lobby states. When you create a game, you want to ensure select forensic scientist
+    // is set to the room creator, when you join a game from home view, you want to update these lobby states.
+    if (this.joinedRoomByURL == false) {
+      this.$socket.client.emit("getLobbyState", this.globalRoom);
+    }
   }
 };
 </script>
