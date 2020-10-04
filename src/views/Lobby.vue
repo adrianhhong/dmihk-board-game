@@ -21,12 +21,7 @@
         <v-snackbar v-model="showDuplicateNameFound" :timeout="3000">
           Duplicate name found. Please choose a different name.
           <template v-slot:action="{ attrs }">
-            <v-btn
-              color="red"
-              text
-              v-bind="attrs"
-              @click="showDuplicateNameFound = false"
-            >
+            <v-btn color="red" text v-bind="attrs" @click="showDuplicateNameFound = false">
               Close
             </v-btn>
           </template>
@@ -35,12 +30,7 @@
         <v-snackbar v-model="showRoomIsFull" :timeout="3000">
           Room is full!
           <template v-slot:action="{ attrs }">
-            <v-btn
-              color="red"
-              text
-              v-bind="attrs"
-              @click="showRoomIsFull = false"
-            >
+            <v-btn color="red" text v-bind="attrs" @click="showRoomIsFull = false">
               Close
             </v-btn>
           </template>
@@ -78,10 +68,7 @@
           <v-subheader>Players</v-subheader>
           <v-list-item-group v-model="indexOfPlayer" color="primary">
             <v-list-item v-for="(player, i) in globalPlayerList" :key="i">
-              <v-list-item-title
-                v-text="player"
-                style="text-align:left"
-              ></v-list-item-title>
+              <v-list-item-title v-text="player" style="text-align:left"></v-list-item-title>
               <v-list-item-icon>
                 <v-icon v-if="i == 0" color="blue" right>
                   mdi-crown
@@ -163,11 +150,7 @@
         </v-card-text>
       </v-card>
 
-      <v-btn
-        class="primary"
-        large
-        :disabled="globalPlayerList.length < 4 || indexOfPlayer != 0"
-        @click="startGame"
+      <v-btn class="primary" large :disabled="globalPlayerList.length < 4 || indexOfPlayer != 0" @click="startGame"
         >Start</v-btn
       >
       <v-btn class="primary" large @click="quitGame">Quit</v-btn>
@@ -200,12 +183,7 @@ export default {
   },
   computed: {
     // Get all global states from the vuex store
-    ...mapState([
-      "globalName",
-      "globalRoom",
-      "globalPlayerList",
-      "joinedRoomByURL"
-    ]),
+    ...mapState(["globalName", "globalRoom", "globalPlayerList", "joinedRoomByURL"]),
     indexOfPlayer() {
       return this.$store.getters.getIndexOfPlayer;
     }
@@ -219,11 +197,7 @@ export default {
     joinGame() {
       if (this.name.trim()) {
         store.commit("setGlobalName", { name: this.name.trim() });
-        this.$socket.client.emit(
-          "joinGame",
-          this.name.trim(),
-          this.$route.params.room
-        );
+        this.$socket.client.emit("joinGame", this.name.trim(), this.$route.params.room);
       }
     },
     // Clicking Start Game
@@ -320,10 +294,7 @@ export default {
 
   beforeCreate() {
     // If you try to join a room using the URL, we need to first check if that room actually exists
-    this.$socket.client.emit(
-      "checkIfRoomExistsWhenJoinByUrl",
-      this.$route.params.room
-    );
+    this.$socket.client.emit("checkIfRoomExistsWhenJoinByUrl", this.$route.params.room);
   },
 
   mounted() {

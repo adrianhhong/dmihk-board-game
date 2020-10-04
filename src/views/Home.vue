@@ -1,17 +1,10 @@
 <template>
   <div>
     <!-- HOME PAGE -->
-    <v-container
-      v-if="!showCreate && !showJoin"
-      class="text-center"
-      max-width="425"
-      fluid
-    >
+    <v-container v-if="!showCreate && !showJoin" class="text-center" max-width="425" fluid>
       <h1>deception: murder in hong kong</h1>
 
-      <v-btn class="primary" large @click="showCreate = true"
-        >Create Game</v-btn
-      >
+      <v-btn class="primary" large @click="showCreate = true">Create Game</v-btn>
       <v-btn class="primary" large @click="showJoin = true">Join Game</v-btn>
     </v-container>
 
@@ -28,9 +21,7 @@
       >
       </v-text-field>
       <v-btn class="primary" large @click="createGame">Create</v-btn>
-      <v-btn class="primary" large @click="showCreate = showJoin = false"
-        >Back
-      </v-btn>
+      <v-btn class="primary" large @click="showCreate = showJoin = false">Back </v-btn>
     </v-container>
 
     <!-- JOIN PAGE -->
@@ -59,20 +50,13 @@
       </v-text-field>
 
       <v-btn class="primary" large @click="joinGame">Join</v-btn>
-      <v-btn class="primary" large @click="showCreate = showJoin = false"
-        >Back</v-btn
-      >
+      <v-btn class="primary" large @click="showCreate = showJoin = false">Back</v-btn>
 
       <!-- Snackbar Warnings -->
       <v-snackbar v-model="showDuplicateNameFound" :timeout="3000">
         Duplicate name found. Please choose a different name.
         <template v-slot:action="{ attrs }">
-          <v-btn
-            color="red"
-            text
-            v-bind="attrs"
-            @click="showDuplicateNameFound = false"
-          >
+          <v-btn color="red" text v-bind="attrs" @click="showDuplicateNameFound = false">
             Close
           </v-btn>
         </template>
@@ -81,12 +65,7 @@
       <v-snackbar v-model="showRoomNotFound" :timeout="3000">
         Room not found!
         <template v-slot:action="{ attrs }">
-          <v-btn
-            color="red"
-            text
-            v-bind="attrs"
-            @click="showRoomNotFound = false"
-          >
+          <v-btn color="red" text v-bind="attrs" @click="showRoomNotFound = false">
             Close
           </v-btn>
         </template>
@@ -95,12 +74,7 @@
       <v-snackbar v-model="showRoomIsFull" :timeout="3000">
         Room is full!
         <template v-slot:action="{ attrs }">
-          <v-btn
-            color="red"
-            text
-            v-bind="attrs"
-            @click="showRoomIsFull = false"
-          >
+          <v-btn color="red" text v-bind="attrs" @click="showRoomIsFull = false">
             Close
           </v-btn>
         </template>
@@ -144,11 +118,7 @@ export default {
     joinGame() {
       if (this.name.trim() && this.room.trim()) {
         store.commit("setGlobalName", { name: this.name.trim() });
-        this.$socket.client.emit(
-          "joinGame",
-          this.name.trim(),
-          this.room.trim()
-        );
+        this.$socket.client.emit("joinGame", this.name.trim(), this.room.trim());
       }
     }
   },

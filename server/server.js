@@ -2,6 +2,12 @@ const app = require("express")();
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
 
+const causeOfDeath = require("./cards/causeOfDeath.js");
+const clues = require("./cards/clues.js");
+const eventTiles = require("./cards/eventTiles.js");
+const locations = require("./cards/locations.js");
+const means = require("./cards/means.js");
+
 http.listen(3000, () => {
   console.log("Starting server on port 3000");
 });
@@ -36,6 +42,17 @@ function makeRoomID(length) {
   return result;
 }
 
+function shuffle(array) {
+  let shuffledArray = array;
+  for (let i = shuffledArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * i);
+    const temp = shuffledArray[i];
+    shuffledArray[i] = shuffledArray[j];
+    shuffledArray[j] = temp;
+  }
+  return shuffledArray;
+}
+
 io.on("connection", socket => {
   /**
    * createGame
@@ -67,9 +84,7 @@ io.on("connection", socket => {
       socket.emit("roomNotFound");
     } else {
       // If user's name is the same as another user's name, notify user.
-      let duplicateNameIndex = gameData[foundRoomIndex]["playerList"].findIndex(
-        x => x == name
-      );
+      let duplicateNameIndex = gameData[foundRoomIndex]["playerList"].findIndex(x => x == name);
       if (duplicateNameIndex != -1) {
         console.log(`${name} tried to join ${room} with a duplicate name`);
         socket.emit("duplicateNameFound");
@@ -86,11 +101,7 @@ io.on("connection", socket => {
           console.log(`${name} has joined ${room}`);
           console.log(gameData);
           socket.join(room);
-          io.to(room).emit(
-            "updateLobby",
-            gameData[foundRoomIndex]["playerList"],
-            room
-          );
+          io.to(room).emit("updateLobby", gameData[foundRoomIndex]["playerList"], room);
         }
       }
     }
@@ -114,24 +125,47 @@ io.on("connection", socket => {
    * When a user tries to join a room
    */
   socket.on("startGame", room => {
-    // Set all roles
+    // Create a temp roles array with all roles except FS and is of length playerList - 1
     let roomIndex = gameData.findIndex(x => x.roomID == room);
+    tempRolesArray = Array(gameData[roomIndex].playerList.length - 1).fill("I");
+    tempRolesArray.splice(0, 1, "M");
+    if (gameData[roomIndex].lobbyStates.addAccomplice == true) {
+      tempRolesArray.splice(1, 1, "A");
+    }
+    if (gameData[roomIndex].lobbyStates.addWitness == true) {
+      tempRolesArray.splice(2, 1, "W");
+    }
+    tempRolesArray = shuffle(tempRolesArray);
+    // Insert the Forensic Scientist Role
     if (gameData[roomIndex].lobbyStates.randomiseForensicScientist == false) {
       let FS = gameData[roomIndex].lobbyStates.currentForensicScientist;
       let FSIndex = gameData[roomIndex].playerList.findIndex(x => x == FS);
-      gameData[roomIndex].roleList.splice(FSIndex, 1, "FS");
+      tempRolesArray.splice(FSIndex, 0, "FS");
+    } else {
+      let randomIndexFS = Math.floor(Math.random() * gameData[roomIndex].playerList.length);
+      tempRolesArray.splice(randomIndexFS, 0, "FS");
+    }
+    gameData[roomIndex].roleList = tempRolesArray;
+    // Get all players' means and clues cards
+    let numberOfCards = gameData[roomIndex].lobbyStates.numberOfCards + 1;
+    let shuffledMeans = shuffle(means);
+    for (i = 0; i < gameData[roomIndex].playerList.length; i++) {
+      gameData[roomIndex].means[i] = shuffledMeans.slice(i * numberOfCards, (i + 1) * numberOfCards);
+    }
+    let shuffledClues = shuffle(clues);
+    for (i = 0; i < gameData[roomIndex].playerList.length; i++) {
+      gameData[roomIndex].clues[i] = shuffledClues.slice(i * numberOfCards, (i + 1) * numberOfCards);
     }
     console.log(gameData);
   });
+
   /**
    * leaveGame
    * When a user presses the Quit button to leave a room
    */
   socket.on("leaveGame", room => {
     let roomIndex = gameData.findIndex(x => x.roomID == room);
-    let deleteIndex = gameData[roomIndex]["socketList"].findIndex(
-      x => x == socket.id
-    );
+    let deleteIndex = gameData[roomIndex]["socketList"].findIndex(x => x == socket.id);
     gameData[roomIndex]["playerList"].splice(deleteIndex, 1);
     gameData[roomIndex]["socketList"].splice(deleteIndex, 1);
     socket.leave(room);
@@ -175,11 +209,7 @@ io.on("connection", socket => {
         Array.isArray(gameData[roomIndex]["playerList"]) && // Array exists and is not empty
         gameData[roomIndex]["playerList"].length
       ) {
-        io.to(roomID).emit(
-          "updateLobby",
-          gameData[roomIndex]["playerList"],
-          roomID
-        );
+        io.to(roomID).emit("updateLobby", gameData[roomIndex]["playerList"], roomID);
       } else {
         // No one left in the room, so delete it
         gameData.splice(roomIndex, 1);
