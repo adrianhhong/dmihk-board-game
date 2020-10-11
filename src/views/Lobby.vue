@@ -1,160 +1,164 @@
 <template>
   <div>
-    <div v-if="joinedRoomByURL" class="text-center" max-width="425">
-      <h1>Joining {{ this.$route.params.room }}</h1>
-      <v-card class="pl-3 pr-3 pt-5 pb-5 mt-5">
-        <h3 class="text-xs-center mb-3">What's your name?</h3>
-        <v-text-field
-          v-model="name"
-          outlined
-          maxlength="15"
-          hide-details="auto"
-          :rules="nameRules"
-          @keydown.enter="joinGame"
-        >
-        </v-text-field>
+    <v-app>
+      <v-main>
+        <div v-if="joinedRoomByURL" class="text-center" max-width="425">
+          <h1>Joining {{ this.$route.params.room }}</h1>
+          <v-card class="pl-3 pr-3 pt-5 pb-5 mt-5">
+            <h3 class="text-xs-center mb-3">What's your name?</h3>
+            <v-text-field
+              v-model="name"
+              outlined
+              maxlength="15"
+              hide-details="auto"
+              :rules="nameRules"
+              @keydown.enter="joinGame"
+            >
+            </v-text-field>
 
-        <v-btn class="primary" large @click="joinGame">Join</v-btn>
-        <v-btn class="primary" large @click="goToHome">Back</v-btn>
+            <v-btn class="primary" large @click="joinGame">Join</v-btn>
+            <v-btn class="primary" large @click="goToHome">Back</v-btn>
 
-        <!-- Snackbar Warnings -->
-        <v-snackbar v-model="showDuplicateNameFound" :timeout="3000">
-          Duplicate name found. Please choose a different name.
-          <template v-slot:action="{ attrs }">
-            <v-btn color="red" text v-bind="attrs" @click="showDuplicateNameFound = false">
-              Close
-            </v-btn>
-          </template>
-        </v-snackbar>
+            <!-- Snackbar Warnings -->
+            <v-snackbar v-model="showDuplicateNameFound" :timeout="3000">
+              Duplicate name found. Please choose a different name.
+              <template v-slot:action="{ attrs }">
+                <v-btn color="red" text v-bind="attrs" @click="showDuplicateNameFound = false">
+                  Close
+                </v-btn>
+              </template>
+            </v-snackbar>
 
-        <v-snackbar v-model="showRoomIsFull" :timeout="3000">
-          Room is full!
-          <template v-slot:action="{ attrs }">
-            <v-btn color="red" text v-bind="attrs" @click="showRoomIsFull = false">
-              Close
-            </v-btn>
-          </template>
-        </v-snackbar>
-      </v-card>
-    </div>
+            <v-snackbar v-model="showRoomIsFull" :timeout="3000">
+              Room is full!
+              <template v-slot:action="{ attrs }">
+                <v-btn color="red" text v-bind="attrs" @click="showRoomIsFull = false">
+                  Close
+                </v-btn>
+              </template>
+            </v-snackbar>
+          </v-card>
+        </div>
 
-    <!-- Actual Lobby -->
-    <div v-if="!joinedRoomByURL" class="text-center">
-      <h1>deception: murder in hong kong</h1>
-      <h2 v-if="globalPlayerList.length < 4">
-        game requires a minimum of 4 players
-      </h2>
-      <h2 v-if="globalPlayerList.length >= 4">
-        game has a maximum capacity of 12 players
-      </h2>
-      <h3>room code:</h3>
-      <v-btn
-        rounded
-        x-large
-        color="secondary"
-        v-clipboard:copy="globalRoom"
-        :loading="copied"
-        :disabled="copied"
-        @click="loader = 'copied'"
-      >
-        {{ globalRoom }}
-        <template v-slot:loader>
-          <span>Copied!</span>
-        </template>
-      </v-btn>
-
-      <v-card class="mx-auto" max-width="300" tile>
-        <v-list disabled>
-          <v-subheader>Players</v-subheader>
-          <v-list-item-group v-model="indexOfPlayer" color="primary">
-            <v-list-item v-for="(player, i) in globalPlayerList" :key="i">
-              <v-list-item-title v-text="player" style="text-align:left"></v-list-item-title>
-              <v-list-item-icon>
-                <v-icon v-if="i == 0" color="blue" right>
-                  mdi-crown
-                </v-icon>
-              </v-list-item-icon>
-            </v-list-item>
-          </v-list-item-group>
-        </v-list>
-      </v-card>
-
-      <v-card class="mx-auto" max-width="300">
-        <v-checkbox
-          v-model="randomiseForensicScientist"
-          label="Randomise Forensic Scientist?"
-          :disabled="indexOfPlayer != 0"
-        ></v-checkbox>
-        <v-select
-          v-show="!randomiseForensicScientist"
-          outlined
-          :items="globalPlayerList"
-          label="Pick Forensic Scientist"
-          :disabled="indexOfPlayer != 0"
-          v-model="currentForensicScientist"
-        ></v-select>
-        <h4>Additional Roles (optional for > 6 players)</h4>
-        <v-checkbox
-          v-model="addAccomplice"
-          label="Add Accomplice"
-          :disabled="globalPlayerList.length < 6 || indexOfPlayer != 0"
-        ></v-checkbox>
-        <v-checkbox
-          v-model="addWitness"
-          label="Add Witness"
-          :disabled="globalPlayerList.length < 6 || indexOfPlayer != 0"
-        ></v-checkbox>
-
-        <h4>Number of Cards Per Player</h4>
-        <v-subheader>Means Cards</v-subheader>
-        <v-card-text>
-          <v-slider
-            :disabled="indexOfPlayer != 0"
-            v-model="numberOfCards"
-            :tick-labels="cardLabels"
-            :max="6"
-            step="1"
-            ticks="always"
-            tick-size="3"
-            persistent-hint
-            :hint="
-              numberOfCards < 3
-                ? 'Easier for Investigators'
-                : numberOfCards > 3
-                ? 'Harder for Investigators'
-                : 'Default'
-            "
+        <!-- Actual Lobby -->
+        <div v-if="!joinedRoomByURL" class="text-center">
+          <h1>deception: murder in hong kong</h1>
+          <h2 v-if="globalPlayerList.length < 4">
+            game requires a minimum of 4 players
+          </h2>
+          <h2 v-if="globalPlayerList.length >= 4">
+            game has a maximum capacity of 12 players
+          </h2>
+          <h3>room code:</h3>
+          <v-btn
+            rounded
+            x-large
+            color="secondary"
+            v-clipboard:copy="globalRoom"
+            :loading="copied"
+            :disabled="copied"
+            @click="loader = 'copied'"
           >
-          </v-slider>
-        </v-card-text>
-        <v-subheader>Clue Cards</v-subheader>
-        <v-card-text>
-          <v-slider
-            :disabled="indexOfPlayer != 0"
-            v-model="numberOfCards"
-            :tick-labels="cardLabels"
-            :max="6"
-            step="1"
-            ticks="always"
-            tick-size="3"
-            persistent-hint
-            :hint="
-              numberOfCards < 3
-                ? 'Easier for Investigators'
-                : numberOfCards > 3
-                ? 'Harder for Investigators'
-                : 'Default'
-            "
-          >
-          </v-slider>
-        </v-card-text>
-      </v-card>
+            {{ globalRoom }}
+            <template v-slot:loader>
+              <span>Copied!</span>
+            </template>
+          </v-btn>
 
-      <v-btn class="primary" large :disabled="globalPlayerList.length < 4 || indexOfPlayer != 0" @click="startGame"
-        >Start</v-btn
-      >
-      <v-btn class="primary" large @click="quitGame">Quit</v-btn>
-    </div>
+          <v-card class="mx-auto" max-width="300" tile>
+            <v-list disabled>
+              <v-subheader>Players</v-subheader>
+              <v-list-item-group v-model="indexOfPlayer" color="primary">
+                <v-list-item v-for="(player, i) in globalPlayerList" :key="i">
+                  <v-list-item-title v-text="player" style="text-align:left"></v-list-item-title>
+                  <v-list-item-icon>
+                    <v-icon v-if="i == 0" color="blue" right>
+                      mdi-crown
+                    </v-icon>
+                  </v-list-item-icon>
+                </v-list-item>
+              </v-list-item-group>
+            </v-list>
+          </v-card>
+
+          <v-card class="mx-auto" max-width="300">
+            <v-checkbox
+              v-model="randomiseForensicScientist"
+              label="Randomise Forensic Scientist?"
+              :disabled="indexOfPlayer != 0"
+            ></v-checkbox>
+            <v-select
+              v-show="!randomiseForensicScientist"
+              outlined
+              :items="globalPlayerList"
+              label="Pick Forensic Scientist"
+              :disabled="indexOfPlayer != 0"
+              v-model="currentForensicScientist"
+            ></v-select>
+            <h4>Additional Roles (optional for > 6 players)</h4>
+            <v-checkbox
+              v-model="addAccomplice"
+              label="Add Accomplice"
+              :disabled="globalPlayerList.length < 6 || indexOfPlayer != 0"
+            ></v-checkbox>
+            <v-checkbox
+              v-model="addWitness"
+              label="Add Witness"
+              :disabled="globalPlayerList.length < 6 || indexOfPlayer != 0"
+            ></v-checkbox>
+
+            <h4>Number of Cards Per Player</h4>
+            <v-subheader>Means Cards</v-subheader>
+            <v-card-text>
+              <v-slider
+                :disabled="indexOfPlayer != 0"
+                v-model="numberOfCards"
+                :tick-labels="cardLabels"
+                :max="6"
+                step="1"
+                ticks="always"
+                tick-size="3"
+                persistent-hint
+                :hint="
+                  numberOfCards < 3
+                    ? 'Easier for Investigators'
+                    : numberOfCards > 3
+                    ? 'Harder for Investigators'
+                    : 'Default'
+                "
+              >
+              </v-slider>
+            </v-card-text>
+            <v-subheader>Clue Cards</v-subheader>
+            <v-card-text>
+              <v-slider
+                :disabled="indexOfPlayer != 0"
+                v-model="numberOfCards"
+                :tick-labels="cardLabels"
+                :max="6"
+                step="1"
+                ticks="always"
+                tick-size="3"
+                persistent-hint
+                :hint="
+                  numberOfCards < 3
+                    ? 'Easier for Investigators'
+                    : numberOfCards > 3
+                    ? 'Harder for Investigators'
+                    : 'Default'
+                "
+              >
+              </v-slider>
+            </v-card-text>
+          </v-card>
+
+          <v-btn class="primary" large :disabled="globalPlayerList.length < 4 || indexOfPlayer != 0" @click="startGame"
+            >Start</v-btn
+          >
+          <v-btn class="primary" large @click="quitGame">Quit</v-btn>
+        </div>
+      </v-main>
+    </v-app>
   </div>
 </template>
 

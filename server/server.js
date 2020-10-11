@@ -157,6 +157,13 @@ io.on("connection", socket => {
       gameData[roomIndex].clues[i] = shuffledClues.slice(i * numberOfCards, (i + 1) * numberOfCards);
     }
     console.log(gameData);
+
+    io.in("room").emit(
+      "startGameCards",
+      gameData[roomIndex].playerList,
+      gameData[roomIndex].means,
+      gameData[roomIndex].clues
+    );
   });
 
   /**

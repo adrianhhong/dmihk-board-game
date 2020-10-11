@@ -38,6 +38,9 @@ export default new Vuex.Store({
       state.globalRoom = "";
       state.globalPlayerList = [];
     }
+    // SOCKET_STARTGAMECARDS(state, [playerList, means, clues]) {
+    //   router.push({ name: "Game", params: { room: this.state.globalRoom } });
+    // }
   },
   actions: {},
   modules: {}
